@@ -9,6 +9,6 @@ The task required exhaustive use of concepts such as Pulse Width Modultation, in
 
 ## Final Project: System Integration
 In this project, we combined many sensors, input sources and outputs to create a fully integrated system.
-![](Images/Sensors.png)
+![](FinalExam/Images/Sensors.png)
 
 Concepts such as sensor I/O, Analog to Digital Converters, distance sensors, servos, interrupts, timers and debouncing were used in this project.
