@@ -30,3 +30,5 @@ The bulk of the logic for the code is handled in interrupt service routines towa
 
 The remaining code—in the main function—simply continuously displays the RPM or status messages on the LCD.
 
+## Disclaimer
+`LCD_Driver.c` and `LCD_Driver.h` were provided to me by my professor, Dr. Helferty.
