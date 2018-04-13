@@ -55,17 +55,17 @@
 #define SERVO_DELAY_COMPARE 99		// Take 255 - (SERVO_COUNT_PER_MS*SERVO_PULSE_DELAY)
 
 // -- Function Prototypes --
-void ADCInit(void);							// Turns on ADC inputs
-uint16_t ADCRead(void);						// Returns ADC level in mV
-void sendPINGStartPulse();					// Sends initial 5ms PING pulse
+void ADCInit(void);				// Turns on ADC inputs
+uint16_t ADCRead(void);				// Returns ADC level in mV
+void sendPINGStartPulse();			// Sends initial 5ms PING pulse
 void listenForPINGPulse(uint8_t listen);	// Turns interrupt on for PING return; boolean input
 void setServoDirection(uint8_t direction);	// Sets servo direction; uses SERVO_DIR_ constants as input
 
 // -- Global Variables --
-char lcd_str[7];					// Used to store string to put to LCD
-volatile float dist = 0;			// Calculated PING distance in inches
+char lcd_str[7];			// Used to store string to put to LCD
+volatile float dist = 0;		// Calculated PING distance in inches
 volatile uint8_t led_status = 0;	// 0 for stopped; 1 for solid on; 2 for blinking
-volatile int led_rate = 0;			// Blinking speed of LED in ms
+volatile int led_rate = 0;		// Blinking speed of LED in ms
 volatile float servo_pulse = 1.7;	// Current variable servo PWM pulse in ms
 
 int main(void) {
@@ -75,8 +75,8 @@ int main(void) {
 	
 	// -- Sets I/O Values --
 	DDRB |= LED_MASK | SERVO_MASK;	// Ensure LED and servo pins are outputs
-	PORTB |= LED_MASK;				// Turn on LED to begin
-	PORTB &= ~SERVO_MASK;			// Turn off servo to begin
+	PORTB |= LED_MASK;		// Turn on LED to begin
+	PORTB &= ~SERVO_MASK;		// Turn off servo to begin
 	
 	// -- PORTB Pin Change Interrupt Init --
 	PCMSK1 = PING_MASK;	// Ensure only PING sensor is tracked
@@ -84,18 +84,18 @@ int main(void) {
 	
 	// -- Timer0: PING Counter/Timer --
 	TCCR0A |= (1 << CS02 | 0 << CS01 | 1 << CS00);	// Prescale Clk*1024
-	TIMSK0 |= (1 << TOIE0);							// Enable overflow interrupt
+	TIMSK0 |= (1 << TOIE0);				// Enable overflow interrupt
 	
 	// -- Timer1A: LED Blink Timer --
 	TCCR1B |= (1 << CS12 | 0 << CS11 | 1 << CS10)	// Prescale Clk*1024
-	|  (1 << WGM12);							// Enable CTC mode
-	TIMSK1 |= (1 << OCIE1A);						// Enable compare match interrupt
+	|  (1 << WGM12);				// Enable CTC mode
+	TIMSK1 |= (1 << OCIE1A);			// Enable compare match interrupt
 	
 	TCCR2A |= (1 << CS22 | 1 << CS21 | 1 << CS20)	// Prescale Clk*1024
 	|  (1 << WGM21 | 1 << WGM20);			// Enable Fast PWM mode
-	TIMSK2 |= (1 << TOIE2);							// Enable overflow interrupt
+	TIMSK2 |= (1 << TOIE2);				// Enable overflow interrupt
 	// Don't enable PWM output to OC2A yet
-	OCR2A = SERVO_DELAY_COMPARE;					// Length of delay pulse (20ms),
+	OCR2A = SERVO_DELAY_COMPARE;			// Length of delay pulse (20ms),
 	// since OC2A goes low on match
 	
 	sei();	// Enable all global interrupts
@@ -112,27 +112,27 @@ int main(void) {
 		if (adc_out <= 1000) {
 			
 			if (dist < 10) {
-				led_status = 1;						// LED solid on
+				led_status = 1;				// LED solid on
 				setServoDirection(SERVO_DIR_CCW);	// Rotate servo counterclockwise
-				} else if (dist < 30) {
-				led_status = 2;						// LED blinking
+			} else if (dist < 30) {
+				led_status = 2;				// LED blinking
 				led_rate = ((dist - 10)*80);		// Varies blinking from 0-1.6 seconds
 				setServoDirection(SERVO_DIR_STOP);	// Stop servo
-				} else {
-				led_status = 0;						// LED solid off
+			} else {
+				led_status = 0;				// LED solid off
 				setServoDirection(SERVO_DIR_CW);	// Rotate servo clockwise
 			}
 			
-			} else if (adc_out <= 2000) {
+		} else if (adc_out <= 2000) {
 			
-			led_status = 2;							// Led blinking
-			led_rate = 2000;						// Blinks every 2 seconds
+			led_status = 2;					// Led blinking
+			led_rate = 2000;				// Blinks every 2 seconds
 			setServoDirection(SERVO_DIR_STOP);		// Ensure servo is stopped
 			
-			} else {
+		} else {
 			
-			led_status = 2;							// Led blinking
-			led_rate = 5000;						// Blinks every 5 seconds
+			led_status = 2;					// Led blinking
+			led_rate = 5000;				// Blinks every 5 seconds
 			setServoDirection(SERVO_DIR_STOP);		// Ensure servo is stopped
 			
 		}
@@ -149,7 +149,7 @@ void ADCInit() {
 
 // Returns ADC level in mV
 uint16_t ADCRead() {
-	ADCSRA |= (1 << ADSC);			// Test for result
+	ADCSRA |= (1 << ADSC);		// Test for result
 	while (ADCSRA & (1 << ADSC));	// Wait for result
 	return (ADC * VCC * 6) / 1024;	// Convert to mV
 }
@@ -158,15 +158,15 @@ uint16_t ADCRead() {
 void sendPINGStartPulse() {
 	listenForPINGPulse(FALSE);	// Ensure interrupts are off
 	
-	DDRB |= PING_MASK;			// Set PING pin to output
+	DDRB |= PING_MASK;		// Set PING pin to output
 	
 	PORTB &= ~PING_MASK;		// Ensure output is low for 2us
 	_delay_us(2);
-	PORTB |= PING_MASK;			// Output high for 5us
+	PORTB |= PING_MASK;		// Output high for 5us
 	_delay_us(5);
 	PORTB &= ~PING_MASK;		// Set output back to low
 	
-	DDRB &= ~PING_MASK;			// Set PING pin back to input
+	DDRB &= ~PING_MASK;		// Set PING pin back to input
 	
 	listenForPINGPulse(TRUE);	// Enable interrupts
 }
@@ -175,7 +175,7 @@ void sendPINGStartPulse() {
 void listenForPINGPulse(uint8_t listen) {
 	if (listen) {
 		EIMSK |= (1<<PCIE1);	// Enable PORTB pin change interrupts
-		} else {
+	} else {
 		EIMSK &= ~(1<<PCIE1);	// Disable PORTB pin change interrupts
 	}
 }
@@ -185,7 +185,7 @@ void setServoDirection(uint8_t direction) {
 	switch(direction) {
 		case SERVO_DIR_STOP:
 		TCCR2A &= SERVO_PWM_DISABLED;	// Turn OC2A off to turn PWM off
-		PORTB &= ~SERVO_MASK;			// Ensure servo is low
+		PORTB &= ~SERVO_MASK;		// Ensure servo is low
 		break;
 		case SERVO_DIR_CW:
 		TCCR2A |= SERVO_PWM_ENABLED;	// Turn OC2A on to turn PWM on
@@ -201,9 +201,9 @@ void setServoDirection(uint8_t direction) {
 // PORTB pin change interrupt; after PING start pulse, counts return delay
 ISR(PCINT1_vect) {
 	if (PINB & PING_MASK) {	// If PING went high,
-		TCNT0 = 0;			// start count
-		} else if (TCNT0 > 0) {					// If PING went low and counting has begun,
-		dist = TCNT0 * PING_INCH_PER_COUNT;	// calculate distance
+		TCNT0 = 0;					// start count
+	} else if (TCNT0 > 0) {					// If PING went low and counting has begun,
+		dist = TCNT0 * PING_INCH_PER_COUNT;		// calculate distance
 		listenForPINGPulse(FALSE);			// Disable future interrupts until next start pulse
 	}
 }
@@ -219,14 +219,14 @@ ISR(TIMER1_COMPA_vect) {
 		// If LED is blinking, alternate LED status
 		if (PORTB & LED_MASK) {
 			PORTB &= ~LED_MASK;
-			} else {
+		} else {
 			PORTB |= LED_MASK;
 		}
-		} else {
+	} else {
 		// If LED is solid on, turn it on, otherwise off
 		if (led_status) {
 			PORTB |= LED_MASK;
-			} else {
+		} else {
 			PORTB &= ~LED_MASK;
 		}
 	}
